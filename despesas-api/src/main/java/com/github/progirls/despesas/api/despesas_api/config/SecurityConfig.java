@@ -52,18 +52,22 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/api/v1/usuarios",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs*/**")
-                        .permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(auth -> auth.jwt(Customizer.withDefaults()));
 
         return http.build();
     }
+
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/v1/usuarios/redefinir-senha",
+            "/api/v1/usuarios",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/api/v1/otp/**"
+    };
+
 
     @Bean
     public JwtDecoder jwtDecoder() {

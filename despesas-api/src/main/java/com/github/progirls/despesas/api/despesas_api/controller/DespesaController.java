@@ -18,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.net.URI;
 import java.nio.file.AccessDeniedException;
 
 import org.springframework.data.domain.*;
@@ -50,14 +51,16 @@ public class DespesaController {
     public ResponseEntity<?> criarDespesa(@Valid @RequestBody NovaDespesaDTO dto, Authentication authentication) {
         try {
             var novaDespesa = despesaService.criarDespesa(dto, authentication);
-            return ResponseEntity.status(HttpStatus.CREATED).body(novaDespesa);
+            URI location = URI.create("/api/v1/despesas/" + novaDespesa.id());
+            return ResponseEntity
+                    .created(location)
+                    .body(novaDespesa);
 
         } catch (Exception e) {
-
             return ResponseEntity.badRequest().body("Erro inesperado: " + e.getMessage());
         }
-
     }
+
 
     @Operation(
             summary = "Lista as despesas com ou sem filtro com o usuário autenticado",
@@ -127,5 +130,24 @@ public class DespesaController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao atualizar despesa: " + e.getMessage());
         }
+    }
+
+    @Operation(
+            summary = "Desativar uma despesa (safe delete)",
+            description = "Marca a despesa como inativa em vez de removê-la do banco de dados. " +
+                    "Retorna mensagem confirmando a exclusão lógica.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "Despesa deletada com sucesso.", content = @Content(mediaType = "text/plain")),
+                @ApiResponse(responseCode = "400", description = "Despesa não encontrada", content = @Content),
+                @ApiResponse(responseCode = "401", description = "Falha na autenticação. Token ausente ou inválido.", content = @Content),
+            }
+    )
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<?> desativarDespesa(
+            @Parameter(description = "ID da despesa a ser inativada", required = true)
+            @PathVariable Long id,
+            Authentication authentication) {
+        despesaService.safeDeleteDespesa(id, authentication);
+        return ResponseEntity.ok("Despesa deletada com sucesso.");
     }
 }

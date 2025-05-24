@@ -21,11 +21,11 @@ public class DespesaSpecification {
             }
 
             if(dataInicio != null){
-                predicates.add(cb.greaterThanOrEqualTo(root.get("data"), dataInicio));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("dataInicio"), dataInicio));
             }
 
             if(dataFim != null){
-                predicates.add(cb.lessThanOrEqualTo(root.get("data"), dataFim));
+                predicates.add(cb.lessThanOrEqualTo(root.get("dataFim"), dataFim));
             }
 
             return  cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));

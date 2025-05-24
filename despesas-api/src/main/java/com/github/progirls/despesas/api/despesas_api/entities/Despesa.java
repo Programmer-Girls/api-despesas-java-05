@@ -42,4 +42,7 @@ public class Despesa {
     private LocalDate dataFim;
 
     private Boolean quitado;
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
 }

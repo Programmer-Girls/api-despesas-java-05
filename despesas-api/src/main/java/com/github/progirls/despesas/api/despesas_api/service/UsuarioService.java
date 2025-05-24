@@ -3,6 +3,8 @@ package com.github.progirls.despesas.api.despesas_api.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.github.progirls.despesas.api.despesas_api.entities.OtpToken;
+import com.github.progirls.despesas.api.despesas_api.repository.OtpTokenRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,12 +21,14 @@ import jakarta.transaction.Transactional;
 @Service
 public class UsuarioService {
 
-    private BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
+    private final OtpTokenRepository otpTokenRepository;
 
-    public UsuarioService(BCryptPasswordEncoder passwordEncoder, UsuarioRepository usuarioRepository) {
+    public UsuarioService(BCryptPasswordEncoder passwordEncoder, UsuarioRepository usuarioRepository, OtpTokenRepository otpTokenRepository) {
         this.passwordEncoder = passwordEncoder;
         this.usuarioRepository = usuarioRepository;
+        this.otpTokenRepository = otpTokenRepository;
     }
     
     public Usuario criarUsuario(UsuarioRegisterDto usuarioRegisterDto) {
@@ -59,5 +63,19 @@ public class UsuarioService {
 
         usuario.setSenha(novaSenhaCriptografada);
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void redefinirSenhaComOtp(String email, String codigo, String novaSenha) {
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        OtpToken otp = otpTokenRepository.findByUsuario(usuario).filter(t -> t.getCodigo().equals(codigo) && LocalDateTime.now().isBefore(t.getExpiracao())).orElseThrow(() -> new IllegalArgumentException("Código OTP inválido."));
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+
+        otpTokenRepository.delete(otp);
     }
 }

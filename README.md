@@ -39,15 +39,37 @@ A API é desenvolvida em **Spring Boot** e utiliza **PostgreSQL** como banco de 
 | POST   | `/api/v1/despesas`          | Cria uma nova despesa ao usuário autenticado         | ✅ JWT Token      |
 | GET    | `/api/v1/despesas`          | Filtra as despesas do usuário autenticado, pode ser por filtro ou todas   | ✅ JWT Token      |
 | PUT    | `/api/v1/despesas`          | Atualiza uma despesa do usuário autenticado pelo seu ID                   | ✅ JWT Token      |
-
+| PATCH  | `/api/v1/despesas/{id}/inativar` | Inativa (safe delete) uma despesa do usuário autenticado pelo seu ID | ✅ JWT Token      |
+| POST	 | `/api/v1/otp/enviar`	            | Gera e envia um código OTP por email	                               | ❌ Não requer     |
+| PATCH	 | `/api/v1/usuarios/redefinir-senha`| Redefine a senha usando OTP (email, código e nova senha)	           | ❌ Não requer     |
 
 ---
 
 ## Autenticação
 
+A API utiliza **Spring Security** em conjunto com **OAuth2 Resource Server** para proteger os endpoints de forma robusta.
+
+São utilizados dois métodos de autenticação:
+
+* **Autenticação Básica (Basic Auth)**: utilizada exclusivamente no endpoint de login (`/api/v1/login`). O usuário informa email e senha, e em caso de sucesso, recebe um token JWT.
+
+* **JWT (Bearer Token)**: após o login, o token JWT deve ser enviado no cabeçalho `Authorization` para acessar rotas privadas. Esse token é validado automaticamente pelo `OAuth2 Resource Server`.
+
+Exemplo de envio do token nas requisições autenticadas:
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+```
+
 ---
 
 ## Validação dos Dados
+
+A API utiliza a biblioteca **Jakarta Bean Validation** (por meio do starter `spring-boot-starter-validation`) para validar automaticamente os dados recebidos nas requisições.
+
+* Todos os **parâmetros** e **corpos de requisição (request bodies)** são validados antes da execução da lógica de negócio.
+* As anotações de validação (`@NotNull`, `@Email`, `@Size`, `@Pattern`, entre outras) garantem que os dados estejam no formato esperado e com valores obrigatórios preenchidos.
+* A utilização de **DTOs (Data Transfer Objects)** permite isolar as camadas da aplicação e proteger a integridade das entidades do domínio, garantindo que apenas os dados necessários sejam expostos e modificados.
 
 ---
 
@@ -67,7 +89,43 @@ Antes de começar, certifique-se de ter os seguintes requisitos instalados:
 
 ---
 
+## Configuração de SMTP
+
+As credenciais e instruções para configuração dos servidores SMTP (produção usando Gmail e ambiente de testes com Mailtrap) estão detalhadas no arquivo:
+
+👉 [Configuração SMTP](./docs/smtp-config.md)
+
+---
+
 ## Testes
+
+Para garantir a qualidade do código e o correto funcionamento das funcionalidades, a aplicação possui testes automatizados (integração).
+
+> **Importante**: Para executar os testes, é necessário ter o Maven instalado e a variável de ambiente MAVEN_HOME corretamente configurada no sistema.
+
+### Executando os testes com Maven
+
+Utilize os comandos abaixo no terminal:
+
+```bash
+# Executa todos os testes com limpeza prévia
+mvn clean test
+```
+
+```bash
+# Executa apenas uma classe de teste específica
+mvn -Dtest=NomeDaClasseDeTeste test
+```
+
+```bash
+# Executa apenas métodos específicos de uma classe de teste
+mvn -Dtest=NomeDaClasseDeTeste#nomeDoMetodo test
+```
+
+```bash
+# Executa os testes com log detalhado
+mvn -X test
+```
 
 ---
 

@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @Service
 public class AuthenticatedUserService {
 
@@ -20,4 +22,9 @@ public class AuthenticatedUserService {
         String email = authentication.getName();
         return usuarioRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, ("Usuário não encontrado")));
     }
+
+    public UUID getIdUsuarioAutenticado(Authentication authentication) {
+        return getUsuarioAutenticado(authentication).getId();
+    }
+
 }

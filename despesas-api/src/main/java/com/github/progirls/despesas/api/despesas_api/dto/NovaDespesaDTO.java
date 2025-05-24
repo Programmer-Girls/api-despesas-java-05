@@ -26,7 +26,8 @@ public record NovaDespesaDTO(
         LocalDate dataInicio,
         LocalDate dataFim,
 
-        Boolean quitado
+        Boolean quitado,
+        Boolean ativo
 
 ) {
 }
